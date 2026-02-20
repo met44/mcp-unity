@@ -411,6 +411,10 @@ namespace McpUnity.Unity
             GetMaterialInfoTool getMaterialInfoTool = new GetMaterialInfoTool();
             _tools.Add(getMaterialInfoTool.Name, getMaterialInfoTool);
 
+            // Register TakeScreenshotTool
+            TakeScreenshotTool takeScreenshotTool = new TakeScreenshotTool();
+            _tools.Add(takeScreenshotTool.Name, takeScreenshotTool);
+
             // Register BatchExecuteTool (must be registered last as it needs access to other tools)
             BatchExecuteTool batchExecuteTool = new BatchExecuteTool(this);
             _tools.Add(batchExecuteTool.Name, batchExecuteTool);
