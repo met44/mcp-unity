@@ -26,7 +26,7 @@ namespace McpUnity.Tools
 
             if (instanceId.HasValue)
             {
-                gameObject = EditorUtility.InstanceIDToObject(instanceId.Value) as GameObject;
+                gameObject = EditorUtility.EntityIdToObject(instanceId.Value) as GameObject;
                 identifierInfo = $"instance ID {instanceId.Value}";
             }
             else if (!string.IsNullOrEmpty(objectPath))
@@ -150,7 +150,7 @@ namespace McpUnity.Tools
             GameObject newParent = null;
             if (newParentId.HasValue)
             {
-                newParent = EditorUtility.InstanceIDToObject(newParentId.Value) as GameObject;
+                newParent = EditorUtility.EntityIdToObject(newParentId.Value) as GameObject;
                 if (newParent == null)
                 {
                     return McpUnitySocketHandler.CreateErrorResponse(
@@ -317,7 +317,7 @@ namespace McpUnity.Tools
             }
             else if (newParentId.HasValue)
             {
-                GameObject newParent = EditorUtility.InstanceIDToObject(newParentId.Value) as GameObject;
+                GameObject newParent = EditorUtility.EntityIdToObject(newParentId.Value) as GameObject;
                 if (newParent == null)
                 {
                     return McpUnitySocketHandler.CreateErrorResponse(

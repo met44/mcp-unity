@@ -100,7 +100,7 @@ namespace McpUnity.Tools
                     // Try to find parent by ID first
                     if (parentId.HasValue)
                     {
-                        parent = EditorUtility.InstanceIDToObject(parentId.Value) as GameObject;
+                        parent = EditorUtility.EntityIdToObject(parentId.Value) as GameObject;
                     }
                     // Otherwise try to find by path
                     else if (!string.IsNullOrEmpty(parentPath))

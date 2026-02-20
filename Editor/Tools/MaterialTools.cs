@@ -5,6 +5,7 @@ using McpUnity.Utils;
 using UnityEngine;
 using UnityEditor;
 using Newtonsoft.Json.Linq;
+using UnityEngine.Rendering;
 
 namespace McpUnity.Tools
 {
@@ -111,7 +112,7 @@ namespace McpUnity.Tools
         /// <summary>
         /// Convert a JToken to a shader property value
         /// </summary>
-        public static object ConvertPropertyValue(JToken token, ShaderUtil.ShaderPropertyType propertyType)
+        public static object ConvertPropertyValue(JToken token, ShaderPropertyType propertyType)
         {
             if (token == null)
             {
@@ -120,7 +121,7 @@ namespace McpUnity.Tools
 
             switch (propertyType)
             {
-                case ShaderUtil.ShaderPropertyType.Color:
+                case ShaderPropertyType.Color:
                     if (token.Type == JTokenType.Object)
                     {
                         JObject color = (JObject)token;
@@ -133,7 +134,7 @@ namespace McpUnity.Tools
                     }
                     break;
 
-                case ShaderUtil.ShaderPropertyType.Vector:
+                case ShaderPropertyType.Vector:
                     if (token.Type == JTokenType.Object)
                     {
                         JObject vec = (JObject)token;
@@ -146,11 +147,11 @@ namespace McpUnity.Tools
                     }
                     break;
 
-                case ShaderUtil.ShaderPropertyType.Float:
-                case ShaderUtil.ShaderPropertyType.Range:
+                case ShaderPropertyType.Float:
+                case ShaderPropertyType.Range:
                     return token.ToObject<float>();
 
-                case ShaderUtil.ShaderPropertyType.TexEnv:
+                case ShaderPropertyType.Texture:
                     // Texture path
                     string texPath = token.ToObject<string>();
                     if (!string.IsNullOrEmpty(texPath))
@@ -163,7 +164,7 @@ namespace McpUnity.Tools
                     }
                     break;
 
-                case ShaderUtil.ShaderPropertyType.Int:
+                case ShaderPropertyType.Int:
                     return token.ToObject<int>();
             }
 
@@ -179,7 +180,7 @@ namespace McpUnity.Tools
 
             if (instanceId.HasValue)
             {
-                gameObject = EditorUtility.InstanceIDToObject(instanceId.Value) as GameObject;
+                gameObject = EditorUtility.EntityIdToObject(instanceId.Value) as GameObject;
             }
             else if (!string.IsNullOrEmpty(objectPath))
             {
@@ -345,7 +346,7 @@ namespace McpUnity.Tools
         private void ApplyMaterialProperties(Material material, JObject properties)
         {
             Shader shader = material.shader;
-            int propertyCount = ShaderUtil.GetPropertyCount(shader);
+            int propertyCount = shader.GetPropertyCount();
 
             foreach (var prop in properties.Properties())
             {
@@ -355,10 +356,10 @@ namespace McpUnity.Tools
                 // Find the property in the shader
                 for (int i = 0; i < propertyCount; i++)
                 {
-                    string shaderPropName = ShaderUtil.GetPropertyName(shader, i);
+                    string shaderPropName = shader.GetPropertyName(i);
                     if (shaderPropName == propName)
                     {
-                        ShaderUtil.ShaderPropertyType propType = ShaderUtil.GetPropertyType(shader, i);
+                        ShaderPropertyType propType = shader.GetPropertyType(i);
                         object value = MaterialToolUtils.ConvertPropertyValue(propValue, propType);
 
                         if (value != null)
@@ -371,24 +372,24 @@ namespace McpUnity.Tools
             }
         }
 
-        private void SetMaterialProperty(Material material, string propName, ShaderUtil.ShaderPropertyType propType, object value)
+        private void SetMaterialProperty(Material material, string propName, ShaderPropertyType propType, object value)
         {
             switch (propType)
             {
-                case ShaderUtil.ShaderPropertyType.Color:
+                case ShaderPropertyType.Color:
                     material.SetColor(propName, (Color)value);
                     break;
-                case ShaderUtil.ShaderPropertyType.Vector:
+                case ShaderPropertyType.Vector:
                     material.SetVector(propName, (Vector4)value);
                     break;
-                case ShaderUtil.ShaderPropertyType.Float:
-                case ShaderUtil.ShaderPropertyType.Range:
+                case ShaderPropertyType.Float:
+                case ShaderPropertyType.Range:
                     material.SetFloat(propName, (float)value);
                     break;
-                case ShaderUtil.ShaderPropertyType.TexEnv:
+                case ShaderPropertyType.Texture:
                     material.SetTexture(propName, (Texture)value);
                     break;
-                case ShaderUtil.ShaderPropertyType.Int:
+                case ShaderPropertyType.Int:
                     material.SetInt(propName, (int)value);
                     break;
             }
@@ -419,12 +420,12 @@ namespace McpUnity.Tools
 
             // Fallback: try to find any color property
             Shader shader = material.shader;
-            int propertyCount = ShaderUtil.GetPropertyCount(shader);
+            int propertyCount = shader.GetPropertyCount();
             for (int i = 0; i < propertyCount; i++)
             {
-                if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.Color)
+                if (shader.GetPropertyType(i) == ShaderPropertyType.Color)
                 {
-                    string propName = ShaderUtil.GetPropertyName(shader, i);
+                    string propName = shader.GetPropertyName(i);
                     material.SetColor(propName, color);
                     return;
                 }
@@ -586,7 +587,7 @@ namespace McpUnity.Tools
 
             // Apply properties
             Shader shader = material.shader;
-            int propertyCount = ShaderUtil.GetPropertyCount(shader);
+            int propertyCount = shader.GetPropertyCount();
             List<string> modifiedProperties = new List<string>();
             List<string> unknownProperties = new List<string>();
 
@@ -599,11 +600,11 @@ namespace McpUnity.Tools
                 // Find the property in the shader
                 for (int i = 0; i < propertyCount; i++)
                 {
-                    string shaderPropName = ShaderUtil.GetPropertyName(shader, i);
+                    string shaderPropName = shader.GetPropertyName(i);
                     if (shaderPropName == propName)
                     {
                         found = true;
-                        ShaderUtil.ShaderPropertyType propType = ShaderUtil.GetPropertyType(shader, i);
+                        ShaderPropertyType propType = shader.GetPropertyType(i);
                         object value = MaterialToolUtils.ConvertPropertyValue(propValue, propType);
 
                         if (value != null)
@@ -646,24 +647,24 @@ namespace McpUnity.Tools
             return result;
         }
 
-        private void SetMaterialProperty(Material material, string propName, ShaderUtil.ShaderPropertyType propType, object value)
+        private void SetMaterialProperty(Material material, string propName, ShaderPropertyType propType, object value)
         {
             switch (propType)
             {
-                case ShaderUtil.ShaderPropertyType.Color:
+                case ShaderPropertyType.Color:
                     material.SetColor(propName, (Color)value);
                     break;
-                case ShaderUtil.ShaderPropertyType.Vector:
+                case ShaderPropertyType.Vector:
                     material.SetVector(propName, (Vector4)value);
                     break;
-                case ShaderUtil.ShaderPropertyType.Float:
-                case ShaderUtil.ShaderPropertyType.Range:
+                case ShaderPropertyType.Float:
+                case ShaderPropertyType.Range:
                     material.SetFloat(propName, (float)value);
                     break;
-                case ShaderUtil.ShaderPropertyType.TexEnv:
+                case ShaderPropertyType.Texture:
                     material.SetTexture(propName, (Texture)value);
                     break;
-                case ShaderUtil.ShaderPropertyType.Int:
+                case ShaderPropertyType.Int:
                     material.SetInt(propName, (int)value);
                     break;
             }
@@ -707,15 +708,15 @@ namespace McpUnity.Tools
 
             // Get shader info
             Shader shader = material.shader;
-            int propertyCount = ShaderUtil.GetPropertyCount(shader);
+            int propertyCount = shader.GetPropertyCount();
 
             // Build properties array
             JArray propertiesArray = new JArray();
             for (int i = 0; i < propertyCount; i++)
             {
-                string propName = ShaderUtil.GetPropertyName(shader, i);
-                string propDescription = ShaderUtil.GetPropertyDescription(shader, i);
-                ShaderUtil.ShaderPropertyType propType = ShaderUtil.GetPropertyType(shader, i);
+                string propName = shader.GetPropertyName(i);
+                string propDescription = shader.GetPropertyDescription(i);
+                ShaderPropertyType propType = shader.GetPropertyType(i);
 
                 JObject propInfo = new JObject
                 {
@@ -728,10 +729,10 @@ namespace McpUnity.Tools
                 propInfo["value"] = GetPropertyValue(material, propName, propType);
 
                 // Add range info if applicable
-                if (propType == ShaderUtil.ShaderPropertyType.Range)
+                if (propType == ShaderPropertyType.Range)
                 {
-                    propInfo["rangeMin"] = ShaderUtil.GetRangeLimits(shader, i, 1);
-                    propInfo["rangeMax"] = ShaderUtil.GetRangeLimits(shader, i, 2);
+                    propInfo["rangeMin"] = shader.GetPropertyRangeLimits(i).x;
+                    propInfo["rangeMax"] = shader.GetPropertyRangeLimits(i).y;
                 }
 
                 propertiesArray.Add(propInfo);
@@ -765,11 +766,11 @@ namespace McpUnity.Tools
             };
         }
 
-        private JToken GetPropertyValue(Material material, string propName, ShaderUtil.ShaderPropertyType propType)
+        private JToken GetPropertyValue(Material material, string propName, ShaderPropertyType propType)
         {
             switch (propType)
             {
-                case ShaderUtil.ShaderPropertyType.Color:
+                case ShaderPropertyType.Color:
                     Color color = material.GetColor(propName);
                     return new JObject
                     {
@@ -779,7 +780,7 @@ namespace McpUnity.Tools
                         ["a"] = color.a
                     };
 
-                case ShaderUtil.ShaderPropertyType.Vector:
+                case ShaderPropertyType.Vector:
                     Vector4 vec = material.GetVector(propName);
                     return new JObject
                     {
@@ -789,11 +790,11 @@ namespace McpUnity.Tools
                         ["w"] = vec.w
                     };
 
-                case ShaderUtil.ShaderPropertyType.Float:
-                case ShaderUtil.ShaderPropertyType.Range:
+                case ShaderPropertyType.Float:
+                case ShaderPropertyType.Range:
                     return material.GetFloat(propName);
 
-                case ShaderUtil.ShaderPropertyType.TexEnv:
+                case ShaderPropertyType.Texture:
                     Texture tex = material.GetTexture(propName);
                     if (tex != null)
                     {
@@ -801,7 +802,7 @@ namespace McpUnity.Tools
                     }
                     return null;
 
-                case ShaderUtil.ShaderPropertyType.Int:
+                case ShaderPropertyType.Int:
                     return material.GetInt(propName);
 
                 default:

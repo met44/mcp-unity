@@ -45,7 +45,7 @@ namespace McpUnity.Tools
             // Identify or create the GameObject by instanceId or objectPath
             if (instanceId.HasValue)
             {
-                targetGameObject = EditorUtility.InstanceIDToObject(instanceId.Value) as GameObject;
+                targetGameObject = EditorUtility.EntityIdToObject(instanceId.Value) as GameObject;
                 identifierInfo = $"instance ID {instanceId.Value}";
             }
             else if (!string.IsNullOrEmpty(objectPath))

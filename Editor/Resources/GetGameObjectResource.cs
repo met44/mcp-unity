@@ -53,7 +53,7 @@ namespace McpUnity.Resources
             if (int.TryParse(idOrName, out int instanceId))
             {
                 // Unity Instance IDs are typically negative, but we'll accept any integer
-                UnityEngine.Object unityObject = EditorUtility.InstanceIDToObject(instanceId);
+                UnityEngine.Object unityObject = EditorUtility.EntityIdToObject(instanceId);
                 gameObject = unityObject as GameObject;
             }
             else
